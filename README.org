@@ -1,0 +1,130 @@
+* Hello Docker
+
+ - https://docs.docker.com/engine/reference/commandline/run/
+ - https://fastapi.tiangolo.com/deployment/docker/
+
+Do:
+
+ - sudo docker run -it --rm -d -p 8080:80 --name web nginx
+ - sudo docker ps
+
+localhost:8080 should now work
+
+Run
+
+ - docker stop on the hash id or tag to stop it
+
+* Pull Image
+
+If we just use =docker pull <image>= the image is available but will not run imeadiately  
+
+* Image vs Containers
+
+ - Docker image is a frozen copy (blueprint) of a system as a starting point
+ - When a docker image runs it becomes a container
+
+Images are like classes and containers are like instances
+
+* Dockerfiles
+
+ - https://hub.docker.com/search?q=nginx
+
+And the docker file itself is
+
+ - https://github.com/nginxinc/docker-nginx/blob/5ce65c3efd395ee2d82d32670f233140e92dba99/mainline/debian/Dockerfile
+
+
+#+begin_src dockerfile
+FROM debian:jessie # The base image
+RUN apt install emacs # Adds a layer, and thats why installations are typically oneliners to prevent polluting layers
+ENV # Similar to export in ubuntu but wont persist across images
+EXPOSE 80 443 # Decide explicitly which port can be used inside this container - so we CANT use 81 e.g. in port mapping
+CMD ["nginx", "-g", "daemon off;"]
+#+end_src
+
+Often we dont specify anything after =docker run= and in that case the commands in =CMD= are run automatically!
+
+* Running Docker Interactively
+
+Useful for debugging containers
+
+#+begin_src bash
+# docker run -it <image_name> command
+docker run -it nginx /bin/bash
+#+end_src
+
+* Port Mapping: Assigning Ports What The Computer Maps To
+
+Another neat trick for handling containers with same base image
+
+#+begin_src bash
+  sudo docker run -P -d nginx # Make automatic mapping
+  sudo docker run -d -p 80:80 nginx # Specify the mapping 
+#+end_src
+
+The computer maps 49153 locally to port 80 inside the container. We can the grab the index page using wget as
+
+#+begin_src 
+wget http://localhost:49153
+#+end_src
+
+* Stopping and Deleting
+
+Show containers
+#+begin_src bash
+sudo docker ps # running containers
+sudo docker ps -a # all containers
+#+end_src
+
+Stop/start a container
+
+#+begin_src bash
+sudo docker stop <hasid/container_name>
+sudo docker start <hasid/container_name>
+#+end_src
+
+Delete it from the system
+
+#+begin_src bash
+docker rm <container_name> # after a docker stop
+#+end_src
+
+Listing all images:
+
+#+begin_src bash
+sudo docker images
+#+end_src
+
+Remove it (rmi for remove image and -f for foce)
+
+#+begin_src bash
+docker rmi -f nginx
+#+end_src
+
+* Build
+
+#+begin_src bash
+sudo docker build -t <name-of-image> .
+sudo docker run <name-of-image>
+#+end_src
+
+=-t= means 'tagging' such that it is easier to maintain many images. The =.= means use the dockerfile in this folder!
+
+Or make a mapping
+
+#+begin_src bash
+sudo docker run -P -d <name-of-image>
+sudo docker ps -a # to see the mapping
+#+end_src
+
+and now
+
+#+begin_src bash
+curl http://localhost:<mapped-port>
+#+end_src
+
+* Docker Registries
+
+"Basically a github for your docker files"
+
+Docker HUB is a docker registry provided to for users.
